@@ -1,6 +1,6 @@
 # terraform-aws-codebuild-to-slack
 This is a terraform module to notify CodeBuild evnets to Slack.
-
+![example](https://i.gyazo.com/a6c00090c6c8771f679c46c56a2e6172.png)
 
 ## Usage
 ```terraform
