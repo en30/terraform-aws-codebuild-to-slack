@@ -3,6 +3,7 @@ This is a terraform module to notify CodeBuild evnets to Slack.
 ![example](https://i.gyazo.com/a6c00090c6c8771f679c46c56a2e6172.png)
 
 ## Usage
+### terraform 0.12.x
 ```terraform
 variable "encrypted_slack_webhook_url" {}
 
@@ -12,13 +13,32 @@ resource "aws_kms_key" "slack_webhook_url" {
 
 module "codebuild_notification" {
   source = "github.com/en30/terraform-aws-codebuild-to-slack"
+  version = "~> 0.1.0"
+
+  encrypted_slack_webhook_url = var.encrypted_slack_webhook_url
+  slack_channel               = "#app"
+  kms_key_arn                 = aws_kms_key.slack_webhook_url.arn
+}
+```
+
+### terraform 0.11.x
+```terraform
+variable "encrypted_slack_webhook_url" {}
+
+resource "aws_kms_key" "slack_webhook_url" {
+  description = "Key for Slack Webhook URL"
+}
+
+module "codebuild_notification" {
+  source = "github.com/en30/terraform-aws-codebuild-to-slack"
+  version = "0.0.1"
 
   encrypted_slack_webhook_url = "${var.encrypted_slack_webhook_url}"
   slack_channel               = "#app"
   kms_key_arn                 = "${aws_kms_key.slack_webhook_url.arn}"
 }
-
 ```
+
 
 The `encrypted_slack_webhook_url` is an encrypted slack incoming webhook url using a KMS key whose arn is `kms_key_arn`.
 You can get `encrypted_slack_webhook_url` as follows.
