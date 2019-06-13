@@ -1,4 +1,3 @@
-
 resource "aws_cloudwatch_event_rule" "event" {
   name        = "codebuild-event"
   description = "Capture CodeBuild events"
@@ -20,38 +19,39 @@ resource "aws_cloudwatch_event_rule" "event" {
   }
 }
 PATTERN
+
 }
 
 resource "aws_cloudwatch_event_target" "lambda" {
-  rule      = "${aws_cloudwatch_event_rule.event.name}"
+  rule = aws_cloudwatch_event_rule.event.name
   target_id = "notify_slack"
-  arn       = "${aws_lambda_function.notify_slack.arn}"
+  arn = aws_lambda_function.notify_slack.arn
 }
 
 resource "aws_lambda_permission" "codebuild_event" {
-  statement_id  = "AllowExecutionFromCodeBuildEvent"
-  action        = "lambda:InvokeFunction"
-  function_name = "${aws_lambda_function.notify_slack.0.function_name}"
-  principal     = "events.amazonaws.com"
-  source_arn    = "${aws_cloudwatch_event_rule.event.arn}"
+  statement_id = "AllowExecutionFromCodeBuildEvent"
+  action = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.notify_slack.function_name
+  principal = "events.amazonaws.com"
+  source_arn = aws_cloudwatch_event_rule.event.arn
 }
 
 data "null_data_source" "lambda_file" {
-  inputs {
-    filename = "${substr("${path.module}/functions/notify_slack.rb", length(path.cwd) + 1, -1)}"
+  inputs = {
+    filename = "${path.module}/functions/notify_slack.rb"
   }
 }
 
 data "null_data_source" "lambda_archive" {
-  inputs {
-    filename = "${substr("${path.module}/functions/notify_slack.zip", length(path.cwd) + 1, -1)}"
+  inputs = {
+    filename = "${path.module}/functions/notify_slack.zip"
   }
 }
 
 data "archive_file" "notify_slack" {
-  type        = "zip"
-  source_file = "${data.null_data_source.lambda_file.outputs.filename}"
-  output_path = "${data.null_data_source.lambda_archive.outputs.filename}"
+  type = "zip"
+  source_file = data.null_data_source.lambda_file.outputs.filename
+  output_path = data.null_data_source.lambda_archive.outputs.filename
 }
 
 resource "aws_iam_role" "lambda" {
@@ -72,6 +72,7 @@ resource "aws_iam_role" "lambda" {
   ]
 }
 EOF
+
 }
 
 resource "aws_iam_policy" "lambda" {
@@ -106,42 +107,41 @@ resource "aws_iam_policy" "lambda" {
   ]
 }
 EOF
+
 }
 
 resource "aws_iam_role_policy_attachment" "lambda" {
-  role       = "${aws_iam_role.lambda.name}"
-  policy_arn = "${aws_iam_policy.lambda.arn}"
+  role = aws_iam_role.lambda.name
+  policy_arn = aws_iam_policy.lambda.arn
 }
 
-
 resource "aws_lambda_function" "notify_slack" {
-  depends_on = [
-    "aws_iam_role_policy_attachment.lambda",
-  ]
+  depends_on = [aws_iam_role_policy_attachment.lambda]
 
-  filename = "${data.archive_file.notify_slack.0.output_path}"
+  filename = data.archive_file.notify_slack.output_path
 
-  function_name = "${var.lambda_function_name}"
+  function_name = var.lambda_function_name
 
-  role             = "${aws_iam_role.lambda.arn}"
-  handler          = "notify_slack.lambda_handler"
-  source_code_hash = "${data.archive_file.notify_slack.0.output_base64sha256}"
-  runtime          = "ruby2.5"
-  timeout          = 30
+  role = aws_iam_role.lambda.arn
+  handler = "notify_slack.lambda_handler"
+  source_code_hash = data.archive_file.notify_slack.output_base64sha256
+  runtime = "ruby2.5"
+  timeout = 30
 
   environment {
     variables = {
-      ENCRYPTED_SLACK_WEBHOOK_URL = "${var.encrypted_slack_webhook_url}"
-      SLACK_CHANNEL     = "${var.slack_channel}"
-      SLACK_USERNAME    = "${var.slack_username}"
-      SLACK_EMOJI       = "${var.slack_emoji}"
+      ENCRYPTED_SLACK_WEBHOOK_URL = var.encrypted_slack_webhook_url
+      SLACK_CHANNEL = var.slack_channel
+      SLACK_USERNAME = var.slack_username
+      SLACK_EMOJI = var.slack_emoji
     }
   }
 
   lifecycle {
     ignore_changes = [
-      "filename",
-      "last_modified",
+      filename,
+      last_modified,
     ]
   }
 }
+
