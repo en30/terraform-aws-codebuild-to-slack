@@ -12,8 +12,8 @@ resource "aws_kms_key" "slack_webhook_url" {
 }
 
 module "codebuild_notification" {
-  source = "github.com/en30/terraform-aws-codebuild-to-slack"
-  version = "~> 0.1.0"
+  source  = "en30/codebuild-to-slack/aws"
+  version = "~> 0.1.1"
 
   encrypted_slack_webhook_url = var.encrypted_slack_webhook_url
   slack_channel               = "#app"
@@ -30,7 +30,7 @@ resource "aws_kms_key" "slack_webhook_url" {
 }
 
 module "codebuild_notification" {
-  source = "github.com/en30/terraform-aws-codebuild-to-slack"
+  source  = "en30/codebuild-to-slack/aws"
   version = "0.0.1"
 
   encrypted_slack_webhook_url = "${var.encrypted_slack_webhook_url}"
