@@ -36,22 +36,10 @@ resource "aws_lambda_permission" "codebuild_event" {
   source_arn = aws_cloudwatch_event_rule.event.arn
 }
 
-data "null_data_source" "lambda_file" {
-  inputs = {
-    filename = "${path.module}/functions/notify_slack.rb"
-  }
-}
-
-data "null_data_source" "lambda_archive" {
-  inputs = {
-    filename = "${path.module}/functions/notify_slack.zip"
-  }
-}
-
 data "archive_file" "notify_slack" {
   type = "zip"
-  source_file = data.null_data_source.lambda_file.outputs.filename
-  output_path = data.null_data_source.lambda_archive.outputs.filename
+  source_file = "${path.module}/functions/notify_slack.rb"
+  output_path = "${path.module}/functions/notify_slack.zip"
 }
 
 resource "aws_iam_role" "lambda" {
@@ -139,7 +127,6 @@ resource "aws_lambda_function" "notify_slack" {
 
   lifecycle {
     ignore_changes = [
-      filename,
       last_modified,
     ]
   }
